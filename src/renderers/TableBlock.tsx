@@ -11,7 +11,6 @@ import {
 import {
   ScrollView,
   StyleSheet,
-  Text,
   View,
   type LayoutChangeEvent,
 } from 'react-native';
@@ -19,6 +18,7 @@ import type { StyleProp, ViewStyle } from 'react-native';
 import type { Node, Parent } from 'unist';
 import type { TableCell, TableRow } from 'mdast';
 import type { MarkdownTheme } from '../core/themes';
+import { useComponents } from './ComponentContext';
 
 export interface TableBlockProps {
   rows: TableRow[];
@@ -59,7 +59,7 @@ function estimateTextWidth(text: string, fontSize: number): number {
       width += fontSize * 0.42;
     }
     // Narrow characters (28-35% of font size)
-    else if (/[fIijl!\/\\|]/.test(char)) {
+    else if (/[fIijl!/\\|]/.test(char)) {
       width += fontSize * 0.3;
     }
     // Very narrow - punctuation and spacing (20-28% of font size)
@@ -218,6 +218,7 @@ function TableCell({
   onContentLayout: (event: LayoutChangeEvent) => void;
   isLastRow: boolean;
 }) {
+  const { Text } = useComponents();
   const isNumericCell = isNumericLikeText(getTextContent(cell));
 
   const children = renderInlineChildren(cell, cellKey).filter(

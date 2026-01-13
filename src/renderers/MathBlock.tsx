@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import type { MarkdownTheme } from '../core/themes';
+import { useComponents } from './ComponentContext';
 
 type MathViewProps = {
   math: string;
@@ -48,6 +49,7 @@ export function MathBlock({
   containerStyle,
   textStyle,
 }: MathBlockProps) {
+  const { Text } = useComponents();
   const MathView = useMemo(resolveMathView, []);
 
   if (!value.trim()) {

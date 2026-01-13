@@ -4,12 +4,12 @@ import {
   Image,
   Pressable,
   StyleSheet,
-  Text,
   View,
   type GestureResponderEvent,
 } from 'react-native';
 import type { StyleProp, ViewStyle, TextStyle, ImageStyle } from 'react-native';
 import type { MarkdownTheme } from '../core/themes';
+import { useComponents } from './ComponentContext';
 
 type LoadState = 'idle' | 'loading' | 'loaded' | 'error';
 
@@ -36,6 +36,7 @@ export function ImageBlock({
   onLongPress,
   showCaption = true,
 }: ImageBlockProps) {
+  const { Text } = useComponents();
   const [state, setState] = useState<LoadState>('idle');
   const [aspectRatio, setAspectRatio] = useState<number | undefined>(undefined);
 
@@ -143,6 +144,7 @@ export function ImageBlock({
     theme.codeBorderColor,
     theme.linkColor,
     theme.mutedTextColor,
+    Text,
     url,
   ]);
 

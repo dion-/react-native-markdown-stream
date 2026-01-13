@@ -1,4 +1,4 @@
-import {
+import React, {
   Fragment,
   cloneElement,
   isValidElement,
@@ -12,7 +12,7 @@ import {
   Modal,
   Pressable,
   StyleSheet,
-  Text,
+  Text as BaseText,
   View,
 } from 'react-native';
 import type {
@@ -41,6 +41,11 @@ import {
   type ThemePreference,
 } from '../core/themes';
 import { INCOMPLETE_LINK_PLACEHOLDER } from '../core/incomplete-markdown';
+import { ComponentProvider } from './ComponentContext';
+
+const DefaultBlock: React.ComponentType<
+  React.ComponentProps<typeof Pressable> & { node: Content }
+> = ({ node, ...props }) => <Pressable {...props} />;
 
 export interface MarkdownRendererComponents {
   codeBlock?: (props: CodeBlockProps) => ReactNode;
@@ -49,6 +54,10 @@ export interface MarkdownRendererComponents {
   mathInline?: (props: MathBlockProps) => ReactNode;
   image?: (props: ImageBlockProps & { node: MdastImage }) => ReactNode;
   table?: (props: TableBlockProps & { node: Table }) => ReactNode;
+  text?: typeof BaseText;
+  block?: React.ComponentType<
+    React.ComponentProps<typeof Pressable> & { node: Content }
+  >;
 }
 
 export interface MarkdownRendererProps {
@@ -116,6 +125,8 @@ export function MarkdownRenderer({
   blockLongPressDelay = 300,
 }: MarkdownRendererProps) {
   const resolvedTheme = useMemo(() => resolveTheme(theme), [theme]);
+  const Text = components?.text ?? BaseText;
+  const Block = components?.block ?? DefaultBlock;
   const [lightboxImage, setLightboxImage] = useState<{
     url: string;
     alt?: string;
@@ -258,7 +269,7 @@ export function MarkdownRenderer({
               { color: resolvedTheme.linkColor },
             ]}
             onPress={() => {
-              void openLink(linkNode.url);
+              openLink(linkNode.url);
             }}
           >
             {renderInlineChildren(linkNode, key)}
@@ -355,7 +366,7 @@ export function MarkdownRenderer({
             })
           : undefined;
       if (maybeNavigator?.clipboard?.writeText) {
-        void maybeNavigator.clipboard.writeText(value);
+        maybeNavigator.clipboard.writeText(value);
         return true;
       }
     } catch {
@@ -570,8 +581,6 @@ export function MarkdownRenderer({
   const renderTable = (table: Table, key: string) => {
     const alignments = table.align ?? [];
     const rows = table.children;
-    // Long press breaks scrolling and text selection
-    const allowLongPress = false;
 
     if (components?.table) {
       const element = (
@@ -585,7 +594,7 @@ export function MarkdownRenderer({
           })}
         </Fragment>
       );
-      return wrapBlock(table, key, element, allowLongPress);
+      return wrapBlock(table, key, element);
     }
 
     const element = (
@@ -597,7 +606,7 @@ export function MarkdownRenderer({
       />
     );
 
-    return wrapBlock(table, key, element, allowLongPress);
+    return wrapBlock(table, key, element);
   };
 
   const renderNode = (
@@ -671,7 +680,7 @@ export function MarkdownRenderer({
   };
 
   function wrapBlock(
-    node: Content | { type: string },
+    node: Content,
     key: string,
     element: ReactNode,
     allowLongPress: boolean = true
@@ -689,30 +698,26 @@ export function MarkdownRenderer({
 
     if (!isValidElement(element)) {
       return (
-        <Pressable
-          key={key}
-          onLongPress={() => onBlockLongPress?.({ node: node as Content })}
-          delayLongPress={blockLongPressDelay}
-          style={styles.blockPressable}
-        >
+        <Block key={key} node={node} style={styles.block}>
           {typeof element === 'string' ? (
             <Text style={{ color: resolvedTheme.textColor }}>{element}</Text>
           ) : (
             element
           )}
-        </Pressable>
+        </Block>
       );
     }
 
     return (
-      <Pressable
+      <Block
         key={key}
-        onLongPress={() => onBlockLongPress?.({ node: node as Content })}
+        node={node}
+        onLongPress={() => onBlockLongPress?.({ node })}
         delayLongPress={blockLongPressDelay}
-        style={styles.blockPressable}
+        style={styles.block}
       >
         {cloneElement(element, { key: undefined })}
-      </Pressable>
+      </Block>
     );
   }
 
@@ -769,14 +774,14 @@ export function MarkdownRenderer({
     ) : null;
 
   return (
-    <Fragment>
+    <ComponentProvider value={{ Text, Block }}>
       <View style={[styles.container, containerStyle]}>
         {ast.children.map((node, index) =>
           renderNode(node as Content, `block-${index}`)
         )}
       </View>
       {lightbox}
-    </Fragment>
+    </ComponentProvider>
   );
 }
 
@@ -891,7 +896,7 @@ const styles = StyleSheet.create({
     opacity: 0.3,
     marginVertical: 12,
   },
-  blockPressable: {
+  block: {
     width: '100%',
   },
   lightboxBackdrop: {

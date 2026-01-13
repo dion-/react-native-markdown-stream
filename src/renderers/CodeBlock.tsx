@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import type { MarkdownTheme } from '../core/themes';
+import { useComponents } from './ComponentContext';
 
 export interface CodeBlockProps {
   value: string;
@@ -29,6 +30,7 @@ export function CodeBlock({
   onCopyPress,
   copyButtonLabel,
 }: CodeBlockProps) {
+  const { Text } = useComponents();
   const lines = useMemo(() => {
     if (!value) {
       return [''];
