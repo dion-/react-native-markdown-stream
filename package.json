@@ -39,7 +39,6 @@
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "clean": "del-cli lib",
     "prepare": "bob build",
-    "postinstall": "npm run build",
     "release": "release-it --only-version"
   },
   "keywords": [
@@ -89,7 +88,7 @@
     "prettier": "^3.6.2",
     "react": "19.1.0",
     "react-native": "0.81.4",
-    "react-native-builder-bob": "^0.40.13",
+    "react-native-builder-bob": "0.39.1",
     "release-it": "^19.0.4",
     "typescript": "^5.9.2"
   },
