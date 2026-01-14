@@ -545,7 +545,7 @@ export function MarkdownRenderer({
           })}
         </Fragment>
       );
-      return wrapBlock(image, key, element, false);
+      return wrapBlock(image, key, element);
     }
 
     const element = (
@@ -575,7 +575,7 @@ export function MarkdownRenderer({
       />
     );
 
-    return wrapBlock(image, key, element, false);
+    return wrapBlock(image, key, element);
   };
 
   const renderTable = (table: Table, key: string) => {
@@ -671,8 +671,7 @@ export function MarkdownRenderer({
               style={[styles.paragraph, { color: resolvedTheme.textColor }]}
             >
               {renderInlineNode(node as InlineNode, key)}
-            </TextBlock>,
-            false
+            </TextBlock>
           );
         }
         return null;
@@ -682,20 +681,11 @@ export function MarkdownRenderer({
   function wrapBlock(
     node: Content,
     key: string,
-    element: ReactNode,
-    allowLongPress: boolean = true
+    element: ReactNode
   ): ReactNode {
     if (element == null) {
       return null;
     }
-
-    if (!allowLongPress || !onBlockLongPress) {
-      if (isValidElement(element)) {
-        return cloneElement(element, { key });
-      }
-      return <Fragment key={key}>{element}</Fragment>;
-    }
-
     if (!isValidElement(element)) {
       return (
         <Block key={key} node={node} style={styles.block}>
