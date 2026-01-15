@@ -44,8 +44,8 @@ import { INCOMPLETE_LINK_PLACEHOLDER } from '../core/incomplete-markdown';
 import { ComponentProvider } from './ComponentContext';
 
 const DefaultBlock: React.ComponentType<
-  React.ComponentProps<typeof Pressable> & { node: Content }
-> = ({ node, ...props }) => <Pressable {...props} />;
+  React.ComponentProps<typeof View> & { node: Content }
+> = ({ node, ...props }) => <View {...props} />;
 
 export interface MarkdownRendererComponents {
   codeBlock?: (props: CodeBlockProps) => ReactNode;
@@ -55,9 +55,7 @@ export interface MarkdownRendererComponents {
   image?: (props: ImageBlockProps & { node: MdastImage }) => ReactNode;
   table?: (props: TableBlockProps & { node: Table }) => ReactNode;
   text?: typeof BaseText;
-  block?: React.ComponentType<
-    React.ComponentProps<typeof Pressable> & { node: Content }
-  >;
+  block?: React.ComponentType<{ node: Content; children?: ReactNode }>;
 }
 
 export interface MarkdownRendererProps {
@@ -688,7 +686,7 @@ export function MarkdownRenderer({
     }
     if (!isValidElement(element)) {
       return (
-        <Block key={key} node={node} style={styles.block}>
+        <Block key={key} node={node}>
           {typeof element === 'string' ? (
             <Text style={{ color: resolvedTheme.textColor }}>{element}</Text>
           ) : (
@@ -698,14 +696,21 @@ export function MarkdownRenderer({
       );
     }
 
+    if (onBlockLongPress && Block === DefaultBlock) {
+      return (
+        <Pressable
+          key={key}
+          onLongPress={() => onBlockLongPress({ node })}
+          delayLongPress={blockLongPressDelay}
+          style={styles.block}
+        >
+          {cloneElement(element, { key: undefined })}
+        </Pressable>
+      );
+    }
+
     return (
-      <Block
-        key={key}
-        node={node}
-        onLongPress={() => onBlockLongPress?.({ node })}
-        delayLongPress={blockLongPressDelay}
-        style={styles.block}
-      >
+      <Block key={key} node={node}>
         {cloneElement(element, { key: undefined })}
       </Block>
     );

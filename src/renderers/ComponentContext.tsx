@@ -1,17 +1,16 @@
 import React, { createContext, useContext } from 'react';
-import { Text as BaseText, Pressable } from 'react-native';
+import type { ReactNode } from 'react';
+import { Text as BaseText, View } from 'react-native';
 import type { Content } from 'mdast';
 
 export interface ComponentContextValue {
   Text: typeof BaseText;
-  Block: React.ComponentType<
-    React.ComponentProps<typeof Pressable> & { node: Content }
-  >;
+  Block: React.ComponentType<{ node: Content; children?: ReactNode }>;
 }
 
 const DefaultBlock: React.ComponentType<
-  React.ComponentProps<typeof Pressable> & { node: Content }
-> = ({ node, ...props }) => <Pressable {...props} />;
+  React.ComponentProps<typeof View> & { node: Content }
+> = ({ node, ...props }) => <View {...props} />;
 
 const ComponentContext = createContext<ComponentContextValue>({
   Text: BaseText,
